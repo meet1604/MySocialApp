@@ -497,5 +497,12 @@ bot.catch((err, ctx) => {
 bot.launch({ dropPendingUpdates: true });
 console.log('🤖 @Meet_social_bot is running!');
 
+// Dummy HTTP server so Render free tier doesn't kill the process
+const http = require('http');
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => res.end('OK')).listen(PORT, () => {
+  console.log(`Health check server on port ${PORT}`);
+});
+
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
