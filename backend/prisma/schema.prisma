@@ -1,0 +1,84 @@
+// Prisma Schema — my-post-app
+// PostgreSQL + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  socialAccounts SocialAccount[]
+  posts          Post[]
+
+  @@map("users")
+}
+
+// ─── Social Accounts ──────────────────────────────────────────────────────────
+model SocialAccount {
+  id           String    @id @default(uuid())
+  userId       String
+  platform     Platform
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  accountId    String?   // Platform-specific page/profile ID
+  accountName  String?   // Display name of connected account
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform]) // One account per platform per user
+  @@map("social_accounts")
+}
+
+// ─── Posts ────────────────────────────────────────────────────────────────────
+model Post {
+  id            String     @id @default(uuid())
+  userId        String
+  caption       String
+  hashtags      String[]
+  mediaUrl      String?
+  mediaType     MediaType  @default(IMAGE)
+  platforms     Platform[]
+  scheduledTime DateTime
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?
+  errorMessage  String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+enum Platform {
+  INSTAGRAM
+  LINKEDIN
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}

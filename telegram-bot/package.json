@@ -1,0 +1,20 @@
+{
+  "name": "social-media-telegram-bot",
+  "version": "1.0.0",
+  "description": "AI-powered Telegram bot for social media post creation and scheduling",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.4",
+    "form-data": "^4.0.0",
+    "groq-sdk": "^0.9.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
