@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, PlusSquare, Clock, Link2, LogOut, Zap,
+  LayoutDashboard, PlusSquare, Clock, Link2, LogOut, Zap, Send,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -48,6 +48,22 @@ const DashboardLayout = ({ children }) => {
             </NavLink>
           ))}
         </nav>
+
+        {/* Telegram Bot CTA */}
+        <div className="px-3 pb-2">
+          <a
+            href="https://t.me/Meet_social_bot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium bg-[#229ED9] text-white hover:bg-[#1a8bbf] transition-colors"
+          >
+            <Send className="h-4 w-4 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold">Use Telegram Bot</p>
+              <p className="text-[10px] opacity-80">@Meet_social_bot</p>
+            </div>
+          </a>
+        </div>
 
         {/* User + Logout */}
         <div className="border-t border-gray-100 p-3">
