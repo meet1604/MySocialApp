@@ -63,14 +63,32 @@ bot.start((ctx) => {
   const s = session.get(ctx.from.id);
   if (s.user) {
     return ctx.reply(
-      `👋 Welcome back, *${s.user.name || s.user.email}*!\n\nTell me what you'd like to post about — or send me a photo/video to get started.`,
-      { parse_mode: 'Markdown' }
+      `👋 Welcome back, *${s.user.name || s.user.email}*!\n\n` +
+      `What would you like to do?\n\n` +
+      `💬 Just tell me what to post\n` +
+      `📸 Send a photo/video to include media\n` +
+      `📊 Use /status to check connected accounts`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('📖 How to use', 'show:guide')],
+          [Markup.button.callback('📊 Account Status', 'show:status')],
+        ]),
+      }
     );
   }
   ctx.reply(
-    `👋 *Welcome to Meet Social Bot!*\n\nI'm your AI-powered social media assistant. I'll help you create and schedule posts for *Instagram* and *LinkedIn* through simple conversation.\n\n` +
-    `To get started, login to your account:\n\n<code>/login your@email.com yourpassword</code>`,
-    { parse_mode: 'HTML' }
+    `👋 *Welcome to Meet Social Bot!*\n\n` +
+    `I'm your AI-powered social media assistant. I'll help you create and schedule posts for *Instagram* and *LinkedIn* through simple conversation.\n\n` +
+    `🔐 *First, login to your account:*\n` +
+    `<code>/login your@email.com yourpassword</code>\n\n` +
+    `📖 Use /guide to see how everything works.`,
+    {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback('📖 How to use this bot', 'show:guide')],
+      ]),
+    }
   );
 });
 
@@ -151,25 +169,59 @@ bot.command('status', async (ctx) => {
 // ─────────────────────────────────────────────────────────────────────────────
 bot.command('help', (ctx) => {
   ctx.reply(
-    `🤖 *Meet Social Bot — Help*\n\n` +
-    `*Commands:*\n` +
+    `🤖 *Meet Social Bot — Commands*\n\n` +
     `/start — Welcome screen\n` +
-    `/login email password — Login to your account\n` +
+    `/login email password — Login\n` +
     `/logout — Logout\n` +
-    `/status — View connected Instagram & LinkedIn accounts\n` +
-    `/cancel — Cancel current post creation\n` +
-    `/help — This help message\n\n` +
-    `*Creating a Post:*\n` +
-    `Just tell me what you want to post! I'll use AI to write the caption and hashtags for you. You can also send a photo or video.\n\n` +
-    `*Scheduling:*\n` +
-    `Once you approve your post, tell me when to publish it:\n` +
+    `/status — Check connected accounts\n` +
+    `/guide — Step-by-step usage guide\n` +
+    `/cancel — Cancel current post\n` +
+    `/help — This message`,
+    {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback('📖 Full Guide', 'show:guide')],
+      ]),
+    }
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// /guide — step-by-step how to use
+// ─────────────────────────────────────────────────────────────────────────────
+bot.command('guide', (ctx) => sendGuide(ctx));
+
+async function sendGuide(ctx) {
+  await ctx.reply(
+    `📖 *How to Use Meet Social Bot*\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `*Step 1 — Login* 🔐\n` +
+    `Send: /login your@email.com yourpassword\n\n` +
+    `*Step 2 — Connect your accounts* 🔗\n` +
+    `Go to the web app and connect Instagram & LinkedIn before posting.\n` +
+    `👉 https://my-social-app-gilt.vercel.app/connect-accounts\n\n` +
+    `*Step 3 — Create a post* ✍️\n` +
+    `Just type what you want to post about:\n` +
+    `_"Write a post about my new product launch"_\n` +
+    `_"Create a motivational Monday post"_\n` +
+    `Or send a 📸 photo / 🎬 video directly!\n\n` +
+    `*Step 4 — Pick platforms* 📱\n` +
+    `Choose Instagram, LinkedIn, or Both.\n` +
+    `⚠️ Instagram requires a photo or video.\n\n` +
+    `*Step 5 — Review & Edit* 👀\n` +
+    `See a preview of your post. Ask me to edit anything:\n` +
+    `_"Make it shorter"_ • _"More professional tone"_ • _"Add emojis"_\n\n` +
+    `*Step 6 — Schedule* ⏰\n` +
+    `Tell me when to post in plain English:\n` +
     `• _"tomorrow at 3pm IST"_\n` +
     `• _"Friday at 10am"_\n` +
     `• _"in 2 hours"_\n` +
-    `• _"now"_ — publishes in ~1 minute`,
-    { parse_mode: 'Markdown' }
+    `• _"now"_ — posts within ~1 minute\n\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `That's it! 🎉 Your post will publish automatically at the scheduled time.`,
+    { parse_mode: 'Markdown', disable_web_page_preview: true }
   );
-});
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Photo handler
@@ -277,6 +329,23 @@ bot.on('callback_query', async (ctx) => {
   } else if (data === 'post:cancel') {
     session.reset(ctx.from.id);
     await ctx.reply('❌ Post cancelled. Tell me what you\'d like to post about to start a new one!');
+  } else if (data === 'show:guide') {
+    await sendGuide(ctx);
+  } else if (data === 'show:status') {
+    const s = session.get(ctx.from.id);
+    if (!s.token) return ctx.reply('🔒 Please login first with /login');
+    try {
+      const data2 = await api.getConnectedAccounts(s.token);
+      const ig = data2.status?.INSTAGRAM;
+      const li = data2.status?.LINKEDIN;
+      let msg = `📊 *Connected Accounts*\n\n`;
+      msg += ig?.connected ? `✅ Instagram (@${ig.accountName})\n` : `❌ Instagram _(not connected)_\n`;
+      msg += li?.connected ? `✅ LinkedIn (${li.accountName})\n` : `❌ LinkedIn _(not connected)_\n`;
+      msg += `\n_Connect accounts at the web app._`;
+      ctx.reply(msg, { parse_mode: 'Markdown' });
+    } catch {
+      ctx.reply('❌ Could not fetch account status.');
+    }
   }
 });
 
