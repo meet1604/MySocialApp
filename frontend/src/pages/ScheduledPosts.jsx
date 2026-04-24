@@ -50,9 +50,9 @@ const ScheduledPosts = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Posts</h1>
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Posts</h1>
           <p className="mt-1 text-sm text-gray-500">Manage your scheduled and published posts</p>
         </div>
         <div className="flex items-center gap-2">
@@ -67,7 +67,8 @@ const ScheduledPosts = () => {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-lg bg-gray-100 p-1 w-fit">
+      <div className="overflow-x-auto pb-1">
+      <div className="flex gap-1 rounded-lg bg-gray-100 p-1 w-max">
         {STATUS_FILTERS.map((f) => (
           <button
             key={f}
@@ -81,6 +82,7 @@ const ScheduledPosts = () => {
             {f}
           </button>
         ))}
+      </div>
       </div>
 
       {/* List */}
@@ -100,16 +102,16 @@ const ScheduledPosts = () => {
       ) : (
         <div className="space-y-3">
           {posts.map((post) => (
-            <div key={post.id} className="card flex items-start gap-4">
+            <div key={post.id} className="card flex items-start gap-3 sm:gap-4">
               {/* Thumbnail */}
               {post.mediaUrl ? (
                 <img
                   src={post.mediaUrl}
                   alt=""
-                  className="h-16 w-16 flex-shrink-0 rounded-lg object-cover bg-gray-100"
+                  className="hidden sm:block h-16 w-16 flex-shrink-0 rounded-lg object-cover bg-gray-100"
                 />
               ) : (
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-300">
+                <div className="hidden sm:flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-300">
                   <PlusSquare className="h-6 w-6" />
                 </div>
               )}
